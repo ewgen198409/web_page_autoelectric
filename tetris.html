@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Тетрис</title>
+	<link rel="icon" href="icon.png" type="image/png">
+    <style>
+        @font-face {
+            font-family: 'digi7';
+            src: url('digi7.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: url('background.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: space-between;
+            height: 100vh;
+            overflow-y: auto;
+        }
+        .game-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            flex-grow: 1;
+            justify-content: center;
+            margin-bottom: 0px;
+        }
+        canvas {
+            background-color: #000;
+            border: 2px solid #fff;
+            max-width: 100%;
+            max-height: calc(100vh - 200px); /* Учитываем высоту других элементов */
+        }
+		.info {
+			margin-top: 10px;
+			font-size: 18px;
+			text-align: right; /* Выравнивание текста по правому краю */
+		}
+
+		.info h1 {
+			margin: 0;
+			font-size: 18px;
+			display: inline-block; /* Чтобы заголовок и счет были в одной строке */
+		}
+
+		#score {
+			display: inline-block; /* Чтобы счет был в одной строке с заголовком */
+			margin-left: 10px; /* Отступ между заголовком и счетом */
+		}
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 20px;
+        }
+		.controls button {
+			padding: 15px 30px;
+			font-size: 1.5em;
+			font-weight: bold; /* Делаем шрифт жирным */
+			background-color: rgba(255, 255, 255, 0.3);
+			border: none;
+			border-radius: 5px;
+			cursor: pointer;
+			transition: background-color 0.3s;
+		}
+        .controls button:hover {
+            background-color: rgba(255, 255, 255, 0.5);
+        }
+        .date-time {
+            position: fixed;
+            top: 2px;
+            right: 5px;
+            text-align: right;
+            font-size: 1.5em;
+            font-family: 'digi7', Arial, sans-serif;
+            animation: fadeIn 2s ease-out;
+        }
+        #current-time {
+            font-size: 2em;
+        }
+        .back-button {
+            margin-top: 20px;
+            padding: 15px 30px;
+            font-size: 1.5em;
+            background-color: rgba(255, 255, 255, 0.3);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .back-button:hover {
+            background-color: rgba(255, 255, 255, 0.5);
+        }
+        @media (max-width: 1000px) {
+            .controls button, .back-button {
+                font-size: 1.4em;
+                padding: 10px 20px;
+            }
+			.back-button {
+				font-size: 1.4em;
+			}
+			
+            .date-time {
+			    top: 2px;
+			    right: 2px;
+                font-size: 1em;
+            }
+			canvas {
+				background-color: #000;
+				border: 2px solid #fff;
+				max-width: 100%;
+				max-height: calc(100vh - 280px); /* Уменьшаем высоту, чтобы избежать пересечения с часами */
+			}
+
+			.game-container {
+				margin-top: 10px; /* Добавляем отступ сверху для игрового поля */
+			}
+        }
+    </style>
+</head>
+<body>
+    <div class="date-time" id="date-time">
+        <div id="calendar"></div>
+        <div id="current-time"></div>
+    </div>
+    <div class="game-container">
+        <canvas id="tetris" width="300" height="600"></canvas>
+        <div class="info">
+            <h1>Счёт:</h1>
+            <div id="score">0</div>
+        </div>
+        <div class="controls">
+            <button onclick="moveLeft()">←</button>
+            <button onclick="moveRight()">→</button>
+            <button onclick="rotateRight()">⟳</button>
+            <button onclick="rotateLeft()">⟲</button>
+            <button onclick="moveDown()">↓</button>
+        </div>
+		<button class="back-button" onclick="window.location.href='index.html'">На главную</button>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('tetris');
+        const context = canvas.getContext('2d');
+        context.scale(30, 30);
+
+        const scoreElement = document.getElementById('score');
+
+        let score = 0;
+
+        const colors = [
+            null,
+            '#FF0D72', // Z
+            '#0DC2FF', // L
+            '#0DFF72', // O
+            '#F538FF', // T
+            '#FF8E0D', // J
+            '#FFE138', // S
+            '#3877FF'  // I
+        ];
+
+        const arena = createMatrix(10, 20);
+
+        const player = {
+            pos: {x: 0, y: 0},
+            matrix: null,
+            score: 0,
+        };
+
+        function createMatrix(w, h) {
+            const matrix = [];
+            while (h--) {
+                matrix.push(new Array(w).fill(0));
+            }
+            return matrix;
+        }
+
+        function createPiece(type) {
+            switch (type) {
+                case 'T':
+                    return [
+                        [0, 1, 0],
+                        [1, 1, 1],
+                        [0, 0, 0],
+                    ];
+                case 'O':
+                    return [
+                        [2, 2],
+                        [2, 2],
+                    ];
+                case 'L':
+                    return [
+                        [0, 0, 3],
+                        [3, 3, 3],
+                        [0, 0, 0],
+                    ];
+                case 'J':
+                    return [
+                        [4, 0, 0],
+                        [4, 4, 4],
+                        [0, 0, 0],
+                    ];
+                case 'I':
+                    return [
+                        [0, 5, 0, 0],
+                        [0, 5, 0, 0],
+                        [0, 5, 0, 0],
+                        [0, 5, 0, 0],
+                    ];
+                case 'S':
+                    return [
+                        [0, 6, 6],
+                        [6, 6, 0],
+                        [0, 0, 0],
+                    ];
+                case 'Z':
+                    return [
+                        [7, 7, 0],
+                        [0, 7, 7],
+                        [0, 0, 0],
+                    ];
+            }
+        }
+
+        function drawMatrix(matrix, offset) {
+            matrix.forEach((row, y) => {
+                row.forEach((value, x) => {
+                    if (value !== 0) {
+                        context.fillStyle = colors[value];
+                        context.fillRect(x + offset.x, y + offset.y, 1, 1);
+                    }
+                });
+            });
+        }
+
+        function draw() {
+            context.fillStyle = '#000';
+            context.fillRect(0, 0, canvas.width, canvas.height);
+
+            drawMatrix(arena, {x: 0, y: 0});
+            drawMatrix(player.matrix, player.pos);
+        }
+
+        function merge(arena, player) {
+            player.matrix.forEach((row, y) => {
+                row.forEach((value, x) => {
+                    if (value !== 0) {
+                        arena[y + player.pos.y][x + player.pos.x] = value;
+                    }
+                });
+            });
+        }
+
+        function playerDrop() {
+            player.pos.y++;
+            if (collide(arena, player)) {
+                player.pos.y--;
+                merge(arena, player);
+                playerReset();
+                arenaSweep();
+                updateScore();
+            }
+            dropCounter = 0;
+        }
+
+        function playerMove(dir) {
+            player.pos.x += dir;
+            if (collide(arena, player)) {
+                player.pos.x -= dir;
+            }
+        }
+
+        function playerReset() {
+            const pieces = 'ILJOTSZ';
+            player.matrix = createPiece(pieces[pieces.length * Math.random() | 0]);
+            player.pos.y = 0;
+            player.pos.x = (arena[0].length / 2 | 0) -
+                           (player.matrix[0].length / 2 | 0);
+            if (collide(arena, player)) {
+                arena.forEach(row => row.fill(0));
+                player.score = 0;
+                updateScore();
+            }
+        }
+
+        function arenaSweep() {
+            let rowCount = 1;
+            outer: for (let y = arena.length - 1; y >= 0; --y) {
+                for (let x = 0; x < arena[y].length; ++x) {
+                    if (arena[y][x] === 0) {
+                        continue outer;
+                    }
+                }
+
+                const row = arena.splice(y, 1)[0].fill(0);
+                arena.unshift(row);
+                ++y;
+
+                player.score += rowCount * 10;
+                rowCount *= 2;
+            }
+        }
+
+        function collide(arena, player) {
+            const [m, o] = [player.matrix, player.pos];
+            for (let y = 0; y < m.length; ++y) {
+                for (let x = 0; x < m[y].length; ++x) {
+                    if (m[y][x] !== 0 &&
+                       (arena[y + o.y] &&
+                        arena[y + o.y][x + o.x]) !== 0) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        function rotate(matrix, dir) {
+            for (let y = 0; y < matrix.length; ++y) {
+                for (let x = 0; x < y; ++x) {
+                    [
+                        matrix[x][y],
+                        matrix[y][x],
+                    ] = [
+                        matrix[y][x],
+                        matrix[x][y],
+                    ];
+                }
+            }
+
+            if (dir > 0) {
+                matrix.forEach(row => row.reverse());
+            } else {
+                matrix.reverse();
+            }
+        }
+
+        function playerRotate(dir) {
+            const pos = player.pos.x;
+            let offset = 1;
+            rotate(player.matrix, dir);
+            while (collide(arena, player)) {
+                player.pos.x += offset;
+                offset = -(offset + (offset > 0 ? 1 : -1));
+                if (offset > player.matrix[0].length) {
+                    rotate(player.matrix, -dir);
+                    player.pos.x = pos;
+                    return;
+                }
+            }
+        }
+
+        let dropCounter = 0;
+        let dropInterval = 1000;
+
+        let lastTime = 0;
+        function update(time = 0) {
+            const deltaTime = time - lastTime;
+            lastTime = time;
+
+            dropCounter += deltaTime;
+            if (dropCounter > dropInterval) {
+                playerDrop();
+            }
+
+            draw();
+            requestAnimationFrame(update);
+        }
+
+        function updateScore() {
+            scoreElement.innerText = player.score;
+        }
+
+        function updateDateTime() {
+            const now = new Date();
+            const calendar = document.getElementById('calendar');
+            const currentTime = document.getElementById('current-time');
+
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            calendar.textContent = now.toLocaleDateString('ru-RU', options);
+
+            const timeString = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            currentTime.textContent = timeString;
+        }
+
+        function moveLeft() {
+            playerMove(-1);
+        }
+
+        function moveRight() {
+            playerMove(1);
+        }
+
+        function moveDown() {
+            playerDrop();
+        }
+
+        function rotateRight() {
+            playerRotate(1);
+        }
+
+        function rotateLeft() {
+            playerRotate(-1);
+        }
+
+        document.addEventListener('keydown', event => {
+            if (event.key === 'ArrowLeft') {
+                moveLeft();
+            } else if (event.key === 'ArrowRight') {
+                moveRight();
+            } else if (event.key === 'ArrowDown') {
+                moveDown();
+            } else if (event.key === 'ArrowUp') {
+                rotateRight();
+            } else if (event.key === 'z') {
+                rotateLeft();
+            }
+        });
+
+        playerReset();
+        updateScore();
+        update();
+        setInterval(updateDateTime, 1000);
+        updateDateTime(); // Initial call to display immediately
+    </script>
+</body>
+</html>

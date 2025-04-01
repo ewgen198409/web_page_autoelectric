@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Автоэлектрик</title>
+	<link rel="icon" href="icon.png" type="image/png">
+    <style>
+        @font-face {
+            font-family: 'digi7';
+            src: url('digi7.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: url('background.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow-y: auto;
+            animation: fadeIn 2s ease-out;
+        }
+        .container {
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+            overflow-y: auto;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            max-height: calc(85vh - 200px);
+            margin-bottom: 20px;
+            margin-top: 45px;
+        }
+        .container::-webkit-scrollbar {
+            display: none;
+        }
+        .header {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            text-align: center;
+            animation: slideFromLeft 1s ease-out;
+        }
+        .services {
+            margin: 20px 0;
+            animation: slideFromRight 1s ease-out;
+        }
+        .contact {
+            margin: 20px 0;
+            animation: slideFromLeft 1s ease-out;
+        }
+        .date-time {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            text-align: right;
+            font-size: 1.5em;
+            font-family: 'digi7', Arial, sans-serif;
+            animation: fadeIn 2s ease-out;
+        }
+        #current-time {
+            font-size: 2em;
+        }
+        .weather {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            font-size: 1.2em;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            animation: fadeIn 2s ease-out;
+        }
+        .weather-description {
+            font-size: 1em;
+            margin-top: 5px;
+        }
+        .visit-counter {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            font-size: 0.7em;
+            color: white;
+        }
+        .button-container {
+            position: fixed;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 10px;
+        }
+        .button-container button {
+            padding: 10px 20px;
+            font-size: 1.2em;
+            background-color: rgba(255, 255, 255, 0.3);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .button-container button:hover {
+            background-color: rgba(255, 255, 255, 0.5);
+        }
+        .review-button, .tetris-button, .map-button {
+            margin-top: 20px;
+            padding: 15px 30px;
+            font-size: 1.5em;
+            background-color: rgba(255, 255, 255, 0.3);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            animation: fadeIn 2s ease-out;
+        }
+        .review-button:hover, .tetris-button:hover, .map-button:hover {
+            background-color: rgba(255, 255, 255, 0.5);
+        }
+        .player-container {
+            position: fixed;
+            top: 70px;
+            left: 10px;
+            width: 200px;
+            background: rgba(0, 0, 0, 0.3);
+            padding: 10px;
+            border-radius: 5px;
+            text-align: center;
+            z-index: 1000;
+			max-width: 180px; /* Максимальная ширина */
+        }
+        /* Стили для кастомного выпадающего списка */
+        .custom-select {
+            position: relative;
+            width: 100%;
+            margin-top: 5px;
+        }
+
+        .custom-select select {
+            width: 100%;
+            padding: 5px 25px 5px 10px; /* Отступ справа для стрелки */
+            margin-bottom: 0px;
+            margin-top: 3px;
+            font-size: 0.8em;
+            background-color: rgba(128, 128, 128, 0.5); /* Полупрозрачный серый */
+            color: white; /* Белый текст */
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            appearance: none; /* Убираем стандартные стили */
+            -webkit-appearance: none; /* Для Safari */
+            -moz-appearance: none; /* Для Firefox */
+        }
+
+        /* Кастомная стрелка */
+        .custom-select::after {
+            content: "▼"; /* Unicode-стрелка вниз */
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none; /* Чтобы стрелка не перехватывала клики */
+            color: white; /* Цвет стрелки */
+            font-size: 0.8em;
+        }
+
+        /* Стили для опций */
+        .custom-select select option {
+            background-color: rgba(64, 64, 64, 0.3); /* Темно-серый фон */
+            color: black; /* Черный текст */
+        }
+
+        /* Стили для опций при наведении */
+        .custom-select select option:hover {
+            background-color: rgba(96, 96, 96, 0.3); /* Светло-серый фон при наведении */
+			color: white; /* Белый текст */
+        }
+
+        .player-title {
+            margin-top: 0px;
+            font-size: 1.0em;
+            font-weight: bold;
+            color: white;
+            margin-bottom: 5px;
+        }
+		.player-controls {
+			display: flex;
+			align-items: center;
+			gap: 10px;
+			width: 100%;
+		}
+        #playPauseBtn {
+            background: none;
+            border: none;
+            font-size: 1.5em;
+            cursor: pointer;
+            color: white;
+        }
+		.volume-container {
+			display: flex;
+			align-items: center;
+			gap: 5px;
+			flex: 1;
+		}
+
+		.volume-label {
+			font-size: 0.6em;
+			color: white;
+			width: 25px; /* Фиксированная ширина для метки громкости */
+			white-space: nowrap; /* Предотвращает перенос текста */
+		}
+
+		#volumeSlider {
+			flex: 1; /* Занимает оставшееся пространство */
+			width: calc(100% - 40px); /* Учитывает ширину метки */
+		}
+        .player-container h3 {
+            margin-bottom: 10px;
+            font-size: 1.2em;
+        }
+        #radioPlayer {
+            width: 100%;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        @keyframes slideFromLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        @keyframes slideFromRight {
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        .phone-number {
+            font-family: 'digi7', Arial, sans-serif;
+            font-size: 2em;
+            display: block;
+            text-align: center;
+        }
+        .call-button {
+            display: none;
+            width: 100%;
+            padding: 15px;
+            font-size: 1.5em;
+            background: linear-gradient(45deg, #0000FF, #00BFFF, #0000FF);
+            background-size: 200% 200%;
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            text-align: center;
+            transition: transform 0.2s;
+            animation: shimmer 3s infinite;
+        }
+        .call-button:hover {
+            transform: scale(1.05);
+        }
+        @keyframes shimmer {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        @media (max-width: 1000px) {
+			.container {
+			    margin-bottom: 20px;
+				margin-top: 25px;
+				margin-left: 2px;
+				margin-right: 2px;
+			}
+            .call-button {
+                display: block;
+            }
+            .header {
+                font-size: 2em;
+            }
+            .date-time {
+			    top: 2px;
+			    right: 2px;
+                font-size: 1em;
+            }
+			.weather {
+			    top: 2px;
+				left: 2px;
+			}
+			
+            .weather-description {
+                display: none;
+            }
+            .review-button, .tetris-button, .map-button {
+                font-size: 1.2em;
+                padding: 10px 20px;
+            }
+            .player-container {
+                width: 40%;
+                left: 2px;
+                top: 30px;
+            }
+            .player-title {
+                font-size: 0.8em;
+            }
+            .volume-label {
+                font-size: 0.5em;
+            }
+            .button-container {
+                width: 100%;
+                justify-content: center;
+                gap: 5px;
+            }
+            .button-container button {
+                font-size: 1em;
+                padding: 8px;
+                flex: 1;
+            }
+            .visit-counter {
+                display: none;
+            }
+        }
+        /* Стили для эквалайзера */
+        .equalizer {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: flex-end;
+            justify-content: space-around;
+            gap: 2px;
+            z-index: -1;
+            overflow: hidden;
+            background: transparent;
+            border-radius: 10px;
+        }
+        .equalizer .bar {
+            width: 10px;
+            height: 100%;
+            background: rgba(96, 96, 96, 0.30);
+            transform-origin: bottom;
+            transition: transform 0.1s ease-out;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">"Автоэлектрик"</div>
+        <div class="services">
+            <h2>Наши услуги:</h2>
+            <ul>
+                <li>Ремонт и замена электрических компонентов.</li>
+                <li>Установка и ремонт автосигнализации, автозапуска.</li>
+                <li>Установка и ремонт автомузыки.</li>
+                <li>Поиск и ремонт электропроводки, в т.ч. и безразборным методом.</li>
+                <li>Поиск и ремонт неисправностей электронных систем управления двигателем.</li>
+                <li>Диагностика ГБО4.</li>
+                <li>Поиск неисправностей системы зарядки (ток утечки, генератор, АКБ).</li>
+                <li>Ремонт генераторов (замена подшипников, токосъёмных колец, щёток), подбор зап. частей.</li>
+                <li>Промывка радиатора отопителя салона на стенде.</li>
+                <li>Диагностика и ремонт автономных отопителей Webasto, Eberspacher и китайских аналогов ("автономка", "сухой фен").</li>
+            </ul>
+        </div>
+        <div class="contact">
+            <h2>Контакты:</h2>
+            <p><span class="phone-number">+7 (952) 715-50-21</span></p>
+            <button class="call-button" onclick="window.location.href='tel:+79527155021'">📞 Позвонить</button>
+        </div>
+    </div>
+    <div class="button-container">
+        <button class="map-button" onclick="window.location.href='karta.html'">Как найти</button>
+        <button class="tetris-button" onclick="window.location.href='tetris.html'">Играть в тетрис</button>
+        <button class="review-button" onclick="window.location.href='reviews.html'">Оставить отзыв</button>
+    </div>
+    <div class="date-time" id="date-time">
+        <div id="calendar"></div>
+        <div id="current-time"></div>
+    </div>
+    <div id="weather" class="weather">Загрузка погоды...</div>
+    <div class="player-container">
+        <div class="equalizer">
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+            <div class="bar"></div>
+        </div>
+        <div class="player-title">Слушать радио</div>
+        <div class="player-controls">
+            <button id="playPauseBtn">▶️</button>
+            <div class="volume-container">
+                <span class="volume-label">Volume</span>
+                <input type="range" id="volumeSlider" min="0" max="1" step="0.01">
+            </div>
+        </div>
+        <div class="custom-select">
+            <select id="stationSelect">
+                <option value="https://listen4.myradio24.com/vitaminfm">ВитаминФМ</option>
+                <option value="https://radio-holding.ru:9433/marusya_default">МарусяФМ</option>
+                <option value="https://rusradio.hostingradio.ru/rusradio96.aacp">Русское Радио</option>
+                <option value="https://misato.ru-hoster.com:8006/stream">Радио SuperDance</option>
+            </select>
+        </div>
+    </div>
+    <audio id="radioPlayer" crossorigin="anonymous">
+	    <source src="https://listen4.myradio24.com/vitaminfm" type="audio/mpeg">
+        Ваш браузер не поддерживает аудио
+	</audio>
+    <div id="visit-counter" class="visit-counter">Посещений: <span id="visit-count">0</span></div>
+    <script>
+        // Управление радио и эквалайзер
+        const audio = document.getElementById("radioPlayer");
+        const playPauseBtn = document.getElementById("playPauseBtn");
+        const volumeSlider = document.getElementById("volumeSlider");
+        const stationSelect = document.getElementById("stationSelect");
+        const bars = document.querySelectorAll(".equalizer .bar");
+
+        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+        const analyser = audioContext.createAnalyser();
+        const source = audioContext.createMediaElementSource(audio);
+
+        source.connect(analyser);
+        analyser.connect(audioContext.destination);
+
+        analyser.fftSize = 32;
+        const bufferLength = analyser.frequencyBinCount;
+        const dataArray = new Uint8Array(bufferLength);
+
+        function updateEqualizer() {
+            requestAnimationFrame(updateEqualizer);
+            analyser.getByteFrequencyData(dataArray);
+            bars.forEach((bar, index) => {
+                const height = dataArray[index] / 300 * 1;
+                bar.style.transform = `scaleY(${height})`;
+            });
+        }
+
+        playPauseBtn.addEventListener("click", () => {
+            if (audio.paused) {
+                audio.play();
+                playPauseBtn.textContent = "⏸️";
+                audioContext.resume();
+            } else {
+                audio.pause();
+                playPauseBtn.textContent = "▶️";
+            }
+        });
+
+        volumeSlider.addEventListener("input", () => {
+            audio.volume = volumeSlider.value;
+        });
+        audio.volume = 0.3;
+        volumeSlider.value = 0.3;
+		
+		
+        stationSelect.addEventListener("change", () => {
+            audio.src = stationSelect.value;
+            audio.play();
+            playPauseBtn.textContent = "⏸️";
+            audioContext.resume();
+        });
+
+        updateEqualizer();
+
+        // Обновление даты и времени
+        function updateDateTime() {
+            const now = new Date();
+            const calendar = document.getElementById('calendar');
+            const currentTime = document.getElementById('current-time');
+
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            calendar.textContent = now.toLocaleDateString('ru-RU', options);
+
+            const timeString = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            currentTime.textContent = timeString;
+        }
+
+        setInterval(updateDateTime, 1000);
+        updateDateTime();
+
+        // Получение погоды
+        async function fetchWeather() {
+            const apiKey = '7f3b1f9c54a812f0b2d00f41ff34db27';
+            const city = 'Omsk';
+            const url = `https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}&units=metric&lang=ru`;
+
+            try {
+                const response = await fetch(url);
+                if (!response.ok) {
+                    throw new Error('Ошибка при получении данных о погоде');
+                }
+                const data = await response.json();
+                const weatherDiv = document.getElementById('weather');
+                const description = data.weather[0].description;
+                weatherDiv.innerHTML = `в Омске: ${data.main.temp}°C`;
+                const weatherDescription = document.createElement('div');
+                weatherDescription.className = 'weather-description';
+                weatherDescription.textContent = description;
+                weatherDiv.appendChild(weatherDescription);
+            } catch (error) {
+                console.error('Ошибка при получении данных о погоде:', error);
+                document.getElementById('weather').textContent = 'Погода недоступна';
+            }
+        }
+
+        fetchWeather();
+
+        // Счетчик посещений
+        function updateVisitCounter() {
+            fetch('counter.php')
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Ошибка загрузки счетчика');
+                    }
+                    return response.text();
+                })
+                .then(count => {
+                    document.getElementById('visit-count').textContent = count;
+                })
+                .catch(error => {
+                    console.error('Ошибка загрузки счетчика:', error);
+                    document.getElementById('visit-count').textContent = 'N/A';
+                });
+        }
+
+        updateVisitCounter();
+    </script>
+</body>
+</html>

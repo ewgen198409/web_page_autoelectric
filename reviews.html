@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Отзывы</title>
+	<link rel="icon" href="icon.png" type="image/png">
+    <style>
+        @font-face {
+            font-family: 'digi7';
+            src: url('digi7.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: url('background.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            overflow-y: auto;
+        }
+		.container {
+			text-align: center;
+			padding: 10px;
+			width: 90%;
+			max-width: 600px;
+			box-sizing: border-box; /* Учитываем padding в общей ширине */
+		}
+        .header {
+            font-size: 2.5em;
+            margin-bottom: 20px;
+            animation: slideFromLeft 1s ease-out;
+        }
+		.reviews {
+			margin-top: 20px;
+			font-size: 1em;
+			max-height: 200px;
+			overflow-y: auto;
+			padding: 10px;
+			width: 100%;
+			background: rgba(0, 0, 0, 0.5);
+			border-radius: 5px;
+			margin-bottom: 20px;
+			animation: slideFromRight 1s ease-out;
+			box-sizing: border-box; /* Учитываем padding в общей ширине */
+			scrollbar-width: none; /* Скрывает полосу прокрутки в Firefox */
+			-ms-overflow-style: none; /* Скрывает полосу прокрутки в IE и Edge */
+		}
+
+        .reviews small {
+            font-size: 0.9em;
+            color: gray;
+        }
+        .reviews p {
+            font-size: 0.9em;
+            margin: 5px 0;
+        }
+        .review-form {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+            animation: slideFromLeft 1s ease-out;
+        }
+        .input-row {
+            display: flex;
+            justify-content: space-between;
+            width: 100%;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+        .review-form input, .review-form textarea {
+            padding: 10px;
+            font-size: 1em;
+            border: 1px solid white;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+        }
+        .review-form input {
+            height: 35px;
+            width: 40%;
+            font-size: 0.9em;
+            padding: 5px;
+        }
+        .review-form textarea {
+            width: 100%;
+            height: 80px;
+            font-size: 1em;
+            margin-bottom: 15px;
+        }
+        .review-form button {
+            padding: 15px 30px;
+            font-size: 1.5em;
+            background-color: rgba(255, 255, 255, 0.3);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            margin-top: 10px;
+        }
+        .review-form button:hover {
+            background-color: rgba(255, 255, 255, 0.5);
+        }
+        .date-time {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            text-align: right;
+            font-size: 1.5em;
+            font-family: 'digi7', Arial, sans-serif;
+			animation: slideFromRight 1s ease-out;
+        }
+        #current-time {
+            font-size: 2em;
+        }
+        .back-button {
+            margin-top: 20px;
+            padding: 15px 30px;
+            font-size: 1.5em;
+            background-color: rgba(255, 255, 255, 0.3);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            animation: slideFromLeft 1s ease-out;
+        }
+        .back-button:hover {
+            background-color: rgba(255, 255, 255, 0.5);
+        }
+        @keyframes slideFromLeft {
+            from {
+                opacity: 0;
+                transform: translateX(-100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        @keyframes slideFromRight {
+            from {
+                opacity: 0;
+                transform: translateX(100%);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        @media (max-width: 1000px) {
+            .header {
+                font-size: 2em;
+            }
+            .date-time {
+			    top: 2px;
+			    right: 2px;
+                font-size: 1em;
+            }
+            .review-form button, .back-button {
+                font-size: 1.2em;
+                padding: 10px 20px;
+            }
+			.review-form textarea {
+                box-sizing: border-box; /* Учитываем padding в общей ширине */
+			}
+			
+			.container {
+				width: 100%; /* Увеличиваем ширину контейнера на маленьких экранах */
+			}
+			.reviews {
+				font-size: 0.9em; /* Уменьшаем размер шрифта для маленьких экранов */
+				padding: 8px; /* Уменьшаем отступы для маленьких экранов */
+			}
+
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">Отзывы</div>
+        <div class="reviews" id="reviews">
+            <!-- Отзывы загружаются здесь -->
+        </div>
+        <div class="review-form">
+            <div class="input-row">
+                <input type="text" id="name-input" placeholder="Ваше имя" required>
+                <input type="text" id="car-input" placeholder="Ваш автомобиль" required>
+            </div>
+            <textarea id="review-input" placeholder="Напишите ваш отзыв здесь..." required></textarea>
+            <button onclick="addReview()">Оставить отзыв</button>
+        </div>
+        <button class="back-button" onclick="window.location.href='index.html'">На главную</button>
+    </div>
+    <div class="date-time" id="date-time">
+        <div id="calendar"></div>
+        <div id="current-time"></div>
+    </div>
+
+    <script>
+        function loadReviews() {
+            fetch('load_reviews.php')
+                .then(response => response.text())
+                .then(data => {
+                    document.getElementById('reviews').innerHTML = data;
+                });
+        }
+
+        function addReview() {
+            const name = document.getElementById('name-input').value.trim();
+            const car = document.getElementById('car-input').value.trim();
+            const review = document.getElementById('review-input').value.trim();
+
+            if (!name || !car || !review) {
+                alert("Пожалуйста, заполните все поля.");
+                return;
+            }
+
+            fetch('save_review.php', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: `name=${encodeURIComponent(name)}&car=${encodeURIComponent(car)}&review=${encodeURIComponent(review)}`
+            })
+            .then(() => {
+                document.getElementById('name-input').value = '';
+                document.getElementById('car-input').value = '';
+                document.getElementById('review-input').value = '';
+                loadReviews();
+            });
+        }
+
+        function updateDateTime() {
+            const now = new Date();
+            document.getElementById('calendar').textContent = now.toLocaleDateString('ru-RU', { year: 'numeric', month: 'long', day: 'numeric' });
+            document.getElementById('current-time').textContent = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+        }
+
+        setInterval(updateDateTime, 1000);
+        updateDateTime();
+        loadReviews();
+    </script>
+</body>
+</html>
