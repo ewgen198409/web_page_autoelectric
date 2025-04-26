@@ -100,28 +100,32 @@
         .button-container button {
             padding: 10px 20px;
             font-size: 1.2em;
-            background-color: rgba(255, 255, 255, 0.3);
+            background: rgba(79, 195, 247, 0.3);
             border: none;
             border-radius: 5px;
+            color: white;
             cursor: pointer;
             transition: background-color 0.3s;
         }
         .button-container button:hover {
-            background-color: rgba(255, 255, 255, 0.5);
+            background: rgba(79, 195, 247, 0.5);
+            transform: translateY(-2px);
         }
         .review-button, .tetris-button, .map-button {
             margin-top: 20px;
-            padding: 15px 30px;
+            padding: 10px 20px;
             font-size: 1.5em;
-            background-color: rgba(255, 255, 255, 0.3);
+            background: rgba(79, 195, 247, 0.3);
             border: none;
             border-radius: 5px;
+            color: white;
             cursor: pointer;
             transition: background-color 0.3s;
             animation: fadeIn 2s ease-out;
         }
         .review-button:hover, .tetris-button:hover, .map-button:hover {
-            background-color: rgba(255, 255, 255, 0.5);
+            background: rgba(79, 195, 247, 0.5);
+            transform: translateY(-2px);
         }
         .player-container {
             position: fixed;
@@ -284,15 +288,81 @@
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
         }
-        @media (max-width: 1000px) {
+        .banner {
+            width: 200px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            text-align: center;
+            margin-top: 20px;
+            animation: fadeIn 2s ease-out, slideFromRight 1s ease-out;
+            position: fixed;
+            top: 200px; /* Размещение под часами */
+            left: 10px;
+        }
+
+        .banner h2 {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+        }
+
+        .banner p {
+            font-size: 1em;
+            margin-bottom: 20px;
+        }
+
+        .banner a {
+            display: inline-block;
+            padding: 10px 20px;
+            font-size: 1em;
+            background-color: rgba(255, 255, 255, 0.3);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            text-decoration: none;
+            color: white;
+        }
+
+        .banner a:hover {
+            background-color: rgba(255, 255, 255, 0.5);
+        }
+
+        @media (max-width: 768px) {
 			.container {
 			    margin-bottom: 20px;
 				margin-top: 25px;
 				margin-left: 2px;
 				margin-right: 2px;
 			}
+            .banner {
+                width: 170px; /* Уменьшенная ширина для мобильной версии */
+                height: 100px;
+                top: 30px; /* Размещение под часами для мобильной версии */
+                left: 260px;
+                padding: 1px; /* Уменьшенный отступ */
+            }
+        
+            .banner h2 {
+                font-size: 0.7em; /* Уменьшенный размер шрифта */
+                margin-bottom: 2px; /* Уменьшенный отступ */
+            }
+        
+            .banner p {
+                font-size: 0.6em; /* Уменьшенный размер шрифта */
+                margin-bottom: 3px; /* Уменьшенный отступ */
+            }
+        
+            .banner a {
+                font-size: 0.6em; /* Уменьшенный размер шрифта */
+                padding: 3px 5px; /* Уменьшенный отступ */
+            }
             .call-button {
                 display: block;
+            }
+            .articles-button {
+                font-size: 1.2em;
+                padding: 10px 20px;
             }
             .header {
                 font-size: 2em;
@@ -306,7 +376,7 @@
 			    top: 2px;
 				left: 2px;
 			}
-			
+
             .weather-description {
                 display: none;
             }
@@ -362,6 +432,21 @@
             transform-origin: bottom;
             transition: transform 0.1s ease-out;
         }
+        .articles-button {
+            margin-top: 20px;
+            padding: 15px 30px;
+            font-size: 1.5em;
+            background-color: rgba(255, 255, 255, 0.3);
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            animation: fadeIn 2s ease-out;
+        }
+        .articles-button:hover {
+            background-color: rgba(255, 255, 255, 0.5);
+        }
+
     </style>
 </head>
 <body>
@@ -392,6 +477,7 @@
         <button class="map-button" onclick="window.location.href='karta.html'">Как найти</button>
         <button class="tetris-button" onclick="window.location.href='tetris.html'">Играть в тетрис</button>
         <button class="review-button" onclick="window.location.href='reviews.html'">Оставить отзыв</button>
+        <button class="articles-button" onclick="window.location.href='staty.html'">Статьи</button>
     </div>
     <div class="date-time" id="date-time">
         <div id="calendar"></div>
@@ -432,6 +518,12 @@
                 <option value="https://misato.ru-hoster.com:8006/stream">Радио SuperDance</option>
             </select>
         </div>
+    </div>
+    <!-- Баннер -->
+    <div class="banner">
+        <h2>Проверенный Ip-TV сервис от автоэлектрика</h2>
+        <p>Более 1000 каналов всего за 50 рублей в месяц!</p>
+        <a href="http://viplime.fun/index.php?user=83601">Перейти</a>
     </div>
     <audio id="radioPlayer" crossorigin="anonymous">
 	    <source src="https://listen4.myradio24.com/vitaminfm" type="audio/mpeg">
@@ -482,8 +574,7 @@
         });
         audio.volume = 0.3;
         volumeSlider.value = 0.3;
-		
-		
+
         stationSelect.addEventListener("change", () => {
             audio.src = stationSelect.value;
             audio.play();
@@ -558,3 +649,4 @@
     </script>
 </body>
 </html>
+
