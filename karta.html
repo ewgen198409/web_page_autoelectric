@@ -83,16 +83,21 @@
             gap: 10px;
         }
         .resize-button, .home-button {
-            background-color: rgba(255, 255, 255, 0.3);
+            display: block;
+            margin: 30px auto 0;
+            padding: 12px 25px;
+            font-size: 1.2em;
+            background: rgba(79, 195, 247, 0.3);
             border: none;
             border-radius: 5px;
-            padding: 15px 25px; /* Increased padding for larger buttons */
-            font-size: 1.2em; /* Increased font size */
+            color: white;
             cursor: pointer;
-            transition: background-color 0.3s;
+            transition: all 0.3s;
+            animation: fadeIn 1s ease-out 1s both; /* Анимация с задержкой */
         }
         .resize-button:hover, .home-button:hover {
-            background-color: rgba(255, 255, 255, 0.5);
+            background: rgba(79, 195, 247, 0.5);
+            transform: translateY(-2px);
         }
         @keyframes slideFromLeft {
             from {

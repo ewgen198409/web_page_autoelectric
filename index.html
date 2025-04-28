@@ -214,6 +214,7 @@
 		}
 
 		.volume-label {
+            margin-right: 4px;
 			font-size: 0.6em;
 			color: white;
 			width: 25px; /* Фиксированная ширина для метки громкости */
@@ -289,25 +290,25 @@
             100% { background-position: 0% 50%; }
         }
         .banner {
-            width: 200px;
+            width: 180px;
             padding: 10px;
             background: rgba(0, 0, 0, 0.3);
-            border-radius: 10px;
+            border-radius: 5px;
             text-align: center;
             margin-top: 20px;
             animation: fadeIn 2s ease-out, slideFromRight 1s ease-out;
             position: fixed;
-            top: 200px; /* Размещение под часами */
+            top: 170px;
             left: 10px;
         }
 
         .banner h2 {
-            font-size: 1.2em;
+            font-size: 1em;
             margin-bottom: 10px;
         }
 
         .banner p {
-            font-size: 1em;
+            font-size: 0.8em;
             margin-bottom: 20px;
         }
 
@@ -322,10 +323,26 @@
             transition: background-color 0.3s;
             text-decoration: none;
             color: white;
+            background: linear-gradient(to top right, #808080, rgba(79, 195, 247, 0.5));
+            background-size: 200% 200%;
+            animation: gradientAnimation 3s ease infinite;
+            transition: background-color 0.5s, box-shadow 0.5s;
         }
 
         .banner a:hover {
             background-color: rgba(255, 255, 255, 0.5);
+        }
+
+        @keyframes gradientAnimation {
+          0% {
+            background-position: 0% 50%;
+          }
+          50% {
+            background-position: 100% 50%;
+          }
+          100% {
+            background-position: 0% 50%;
+          }
         }
 
         @media (max-width: 768px) {
@@ -337,19 +354,19 @@
 			}
             .banner {
                 width: 170px; /* Уменьшенная ширина для мобильной версии */
-                height: 100px;
+                height: 90px;
                 top: 30px; /* Размещение под часами для мобильной версии */
                 left: 260px;
                 padding: 1px; /* Уменьшенный отступ */
             }
         
             .banner h2 {
-                font-size: 0.7em; /* Уменьшенный размер шрифта */
+                font-size: 0.6em; /* Уменьшенный размер шрифта */
                 margin-bottom: 2px; /* Уменьшенный отступ */
             }
         
             .banner p {
-                font-size: 0.6em; /* Уменьшенный размер шрифта */
+                font-size: 0.5em; /* Уменьшенный размер шрифта */
                 margin-bottom: 3px; /* Уменьшенный отступ */
             }
         
