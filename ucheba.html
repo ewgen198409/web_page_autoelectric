@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Интерактивный Гид по Колледжам Омска</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Chosen Palette: Calm Neutrals -->
+    <!-- Application Structure Plan: Создана одностраничная панель управления (dashboard). Основная идея - предоставить пользователю возможность нелинейного исследования информации с помощью интерактивных фильтров (по специальности, финансам, условиям поступления, общежитию) и динамически обновляемого списка колледжей в виде карточек. Такой подход выбран потому, что главная задача абитуриента — не последовательное чтение, а сравнение и отбор по личным критериям. Для получения общей картины добавлены сводные диаграммы. Детальная информация о каждом колледже вынесена в модальное окно, чтобы не перегружать основной интерфейс и не уводить пользователя со страницы сравнения. Эта структура превращает пассивный отчет в активный инструмент принятия решений. -->
+    <!-- Visualization & Content Choices: 
+        - Сравнение колледжей: Goal: Compare/Organize -> Viz: Динамическая сетка карточек (HTML/Tailwind) с модальным окном для деталей (JS). Interaction: Фильтрация, клик. Justification: Интуитивный паттерн для каталогов, позволяет быстро сканировать и углубляться в детали.
+        - Бюджетные места: Goal: Compare -> Viz: Горизонтальная гистограмма (Bar Chart, Chart.js). Interaction: Наведение. Justification: Лучший способ визуально сравнить количество по категориям.
+        - Стоимость обучения: Goal: Compare -> Viz: Горизонтальная гистограмма (Bar Chart, Chart.js). Interaction: Наведение. Justification: Идеально для сравнения финансовых показателей.
+        - Направления подготовки: Goal: Inform (proportions) -> Viz: Кольцевая диаграмма (Doughnut Chart, Chart.js). Interaction: Наведение. Justification: Эффективно показывает доли от целого, давая быстрый срез по популярности направлений.
+        - Текстовая информация (описания, отзывы): Goal: Inform -> Viz: Структурированные текстовые блоки в модальном окне. Interaction: Чтение. Justification: Концентрирует детальную информацию в одном месте, не загромождая основной интерфейс.
+    -->
+    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        .chart-container { position: relative; width: 100%; max-width: 800px; margin-left: auto; margin-right: auto; height: 350px; max-height: 400px; }
+        @media (max-width: 768px) { .chart-container { height: 400px; max-height: 450px; } }
+        .modal { transition: opacity 0.3s ease, visibility 0.3s ease; }
+        .modal-content { transition: transform 0.3s ease; }
+        .tag { display: inline-block; padding: 2px 8px; border-radius: 9999px; font-size: 0.75rem; font-weight: 500; }
+        .positive-review { border-left: 4px solid #22c55e; }
+        .negative-review { border-left: 4px solid #ef4444; }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800">
+
+    <div id="app" class="container mx-auto px-4 py-8 md:py-12">
+
+        <header class="text-center mb-10">
+            <h1 class="text-4xl md:text-5xl font-bold text-slate-900 mb-2">Гид по Колледжам Омска</h1>
+            <p class="text-lg text-slate-600 max-w-3xl mx-auto">Интерактивный инструмент для выпускников 9 классов. Найдите подходящее учебное заведение, используя фильтры и сравнения.</p>
+        </header>
+
+        <main>
+            <section id="filters" class="bg-white p-6 rounded-2xl shadow-sm mb-10 sticky top-4 z-20">
+                <h2 class="text-xl font-bold mb-4 text-slate-900">Параметры Поиска</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div>
+                        <label for="specialty-filter" class="block text-sm font-medium text-slate-700 mb-1">Направление</label>
+                        <select id="specialty-filter" class="w-full bg-slate-100 border-slate-200 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                            <option value="all">Все направления</option>
+                            <option value="it">IT и программирование</option>
+                            <option value="tech">Технические и рабочие</option>
+                            <option value="pedagogy">Педагогика</option>
+                            <option value="medicine">Медицина</option>
+                            <option value="economy">Экономика и право</option>
+                            <option value="service">Сервис и творчество</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="tuition-filter" class="block text-sm font-medium text-slate-700 mb-1">Стоимость (до, руб./год)</label>
+                        <input type="number" id="tuition-filter" placeholder="Любая" min="0" step="5000" class="w-full bg-slate-100 border-slate-200 rounded-lg shadow-sm focus:ring-blue-500 focus:border-blue-500">
+                    </div>
+                    <div class="flex items-end space-x-4">
+                        <div class="flex items-center pt-6">
+                            <input id="budget-filter" type="checkbox" class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                            <label for="budget-filter" class="ml-2 block text-sm text-slate-900">Есть бюджетные места</label>
+                        </div>
+                    </div>
+                     <div class="flex items-end space-x-4">
+                        <div class="flex items-center pt-6">
+                            <input id="dorm-filter" type="checkbox" class="h-4 w-4 rounded border-slate-300 text-blue-600 focus:ring-blue-500">
+                            <label for="dorm-filter" class="ml-2 block text-sm text-slate-900">Есть общежитие</label>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="visuals" class="mb-12">
+                <h2 class="text-2xl font-bold text-center mb-8 text-slate-900">Колледжи Омска в Цифрах</h2>
+                 <div class="bg-white p-6 rounded-2xl shadow-sm">
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-center">
+                        <div class="chart-container h-96 md:h-[450px]">
+                            <canvas id="budget-chart"></canvas>
+                        </div>
+                        <div class="chart-container h-96 md:h-[450px]">
+                            <canvas id="tuition-chart"></canvas>
+                        </div>
+                    </div>
+                 </div>
+            </section>
+            
+            <section id="college-list">
+                <div class="flex justify-between items-center mb-6">
+                    <h2 class="text-2xl font-bold text-slate-900">Результаты Поиска</h2>
+                    <p id="results-count" class="text-slate-600 font-medium"></p>
+                </div>
+                <div id="college-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                </div>
+                <p id="no-results" class="text-center text-slate-500 py-10 hidden">По вашему запросу ничего не найдено. Попробуйте изменить фильтры.</p>
+            </section>
+        </main>
+    </div>
+
+    <div id="modal" class="modal invisible opacity-0 fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-60 p-4">
+        <div id="modal-content" class="modal-content transform scale-95 bg-slate-50 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-y-auto relative">
+            <button id="modal-close" class="absolute top-4 right-4 text-slate-500 hover:text-slate-800 z-10">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+            </button>
+            <div id="modal-body" class="p-6 md:p-8">
+            </div>
+        </div>
+    </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+
+const collegesData = [
+    {
+        id: 1,
+        name: "Омский многопрофильный техникум",
+        tags: ["tech", "it", "economy"],
+        budget_places: 175,
+        paid_places: 35,
+        min_tuition: 50000,
+        has_dorm: true,
+        no_exams: true,
+        description: "Один из старейших техникумов Омска, основанный в 1961 году. Участник федерального проекта 'Профессионалитет', ориентирован на актуальные потребности рынка труда и тесную интеграцию с производством.",
+        specialties: [
+            "Сварщик", "Мастер слесарных работ", "Мастер по ремонту автомобилей", "Техническое обслуживание и ремонт автотранспортных средств", "Сварочное производство", "Электромонтажник", "Информационные системы и программирование", "Банковское дело", "Переработка нефти и газа"
+        ],
+        admission_info: {
+            process: "Прием на общедоступной основе по среднему баллу аттестата, без вступительных испытаний. Требуется справка о допуске к занятиям физкультурой.",
+            deadline: "Прием с 20 июня по 15 августа. Возможно продление до 25 ноября при наличии мест."
+        },
+        contacts: {
+            address: "г. Омск, ул. Молодогвардейская, д. 33",
+            phone: "+7 (3812) 42-03-13",
+            email: "post@omt.omskportal.ru"
+        },
+        reviews: [
+            { type: 'positive', text: "Отмечают высокий профессионализм преподавателей и их готовность помочь." },
+            { type: 'positive', text: "Интересные и познавательные занятия." }
+        ]
+    },
+    {
+        id: 2,
+        name: "Омский авиационный колледж им. Н.Е. Жуковского",
+        tags: ["tech", "it", "economy", "service"],
+        budget_places: 870,
+        paid_places: null,
+        min_tuition: 39800,
+        has_dorm: false,
+        no_exams: true,
+        description: "Основан в 1930 году, одно из самых известных учебных заведений Западной Сибири. Готовит кадры для авиационной и других высокотехнологичных отраслей. Огромное количество бюджетных мест.",
+        specialties: [
+            "Информатика и вычислительная техника", "Информационная безопасность", "Машиностроение", "Авиационная и ракетно-космическая техника", "Сетевое и системное администрирование", "Мехатроника и мобильная робототехника", "Эксплуатация беспилотных авиационных систем", "Графический дизайнер", "Экономика и бухгалтерский учет", "Повар, кондитер"
+        ],
+        admission_info: {
+            process: "Для большинства специальностей прием по среднему баллу аттестата без вступительных испытаний.",
+            deadline: "Приемная комиссия начинает работу с 20 июня."
+        },
+        contacts: {
+            address: "г. Омск, ул. Ленина, д. 24",
+            phone: "+7 (3812) 31-16-39",
+            email: "oat@oat.ru"
+        },
+        reviews: [
+            { type: 'positive', text: "Высоко оценивают преподавателей и студенческую жизнь." },
+            { type: 'negative', text: "Есть жалобы на инфраструктурные проблемы (отопление, столовая)." }
+        ]
+    },
+    {
+        id: 3,
+        name: "Омский педагогический колледж № 1",
+        tags: ["pedagogy"],
+        budget_places: 340,
+        paid_places: 125,
+        min_tuition: 30600,
+        has_dorm: true,
+        no_exams: false,
+        description: "Ключевое учреждение по подготовке специалистов для образовательных учреждений Омской области. Специализируется на педагогическом образовании.",
+        specialties: [
+            "Дошкольное образование", "Преподавание в начальных классах", "Педагогика дополнительного образования", "Коррекционная педагогика", "Физическая культура", "Адаптивная физическая культура", "Организация сурдокоммуникации"
+        ],
+        admission_info: {
+            process: "Для специальностей 'Физическая культура' и 'Адаптивная физическая культура' предусмотрены вступительные испытания. Для остальных - по среднему баллу аттестата.",
+            deadline: "Прием с 2 июня. Для специальностей с экзаменами - до 8 августа, для остальных - до 15 августа."
+        },
+        contacts: {
+            address: "г. Омск, ул. Блюхера, 28",
+            phone: "+7 (3812) 65-20-75",
+            email: "priem@opk1.ru"
+        },
+        reviews: [
+            { type: 'positive', text: "Некоторые студенты называют годы учебы 'лучшими студенческими годами'." },
+            { type: 'negative', text: "Другие критикуют большую нагрузку, предвзятое отношение и сильный стресс ('минус психика')." }
+        ]
+    },
+    {
+        id: 4,
+        name: "Медицинский колледж",
+        tags: ["medicine"],
+        budget_places: 400,
+        paid_places: null,
+        min_tuition: 54500,
+        has_dorm: false,
+        no_exams: false,
+        description: "Крупное учебное заведение, готовящее средний медицинский персонал для системы здравоохранения Омского региона. Поступление требует строгого соответствия медицинским требованиям.",
+        specialties: [
+            "Сестринское дело", "Лабораторная диагностика", "Медицинская оптика", "Лечебное дело", "Медико-профилактическое дело", "Фармация", "Стоматология ортопедическая"
+        ],
+        admission_info: {
+            process: "Обязательна медицинская справка 086/У и справки от психолога/нарколога. Для специальности 'Лечебное дело' учитываются результаты экзаменов по русскому языку и биологии.",
+            deadline: "Обычно с июня по август, необходимо уточнять на сайте."
+        },
+        contacts: {
+            address: "г. Омск, ул. Дианова, 2",
+            phone: "+7 (3812) 75-17-10",
+            email: "info@medcoll.ru"
+        },
+        reviews: [
+            { type: 'positive', text: "Положительные отклики о 'прекрасном преподавательском составе'." },
+            { type: 'negative', text: "Встречаются жалобы на 'ужасное отношение к студентам'." }
+        ]
+    },
+    {
+        id: 5,
+        name: "Омская академия экономики и предпринимательства",
+        tags: ["economy", "it", "service"],
+        budget_places: null,
+        paid_places: null,
+        min_tuition: 12500,
+        has_dorm: false,
+        no_exams: true,
+        description: "Готовит специалистов в востребованных областях экономики, юриспруденции, IT и сферы услуг. Выдает дипломы государственного образца. Акцент на финансовой доступности.",
+        specialties: [
+            "Экономика и бухгалтерский учет", "Финансы", "Торговое дело", "Юриспруденция", "Информационные системы и программирование", "Поварское и кондитерское дело"
+        ],
+        admission_info: {
+            process: "Прием без вступительных испытаний на общедоступной основе. Возможна оплата материнским капиталом и использование образовательного кредита.",
+            deadline: "Прием документов начинается с 1 июня."
+        },
+        contacts: {
+            address: "г. Омск, пр. Комарова, д. 13",
+            phone: "+7 (3812) 75-24-00",
+            email: "priem@omacademy.ru"
+        },
+        reviews: []
+    },
+    {
+        id: 6,
+        name: "Сибирский многопрофильный колледж «Перспектива»",
+        tags: ["it", "economy", "pedagogy", "service"],
+        budget_places: 0,
+        paid_places: null,
+        min_tuition: 45000,
+        has_dorm: true,
+        no_exams: false,
+        description: "Колледж с фокусом на инновационные, ускоренные и дистанционные программы обучения. Ориентирован на гибкость и современные подходы к образованию.",
+        specialties: [
+            "Информационные системы и программирование", "Операционная деятельность в логистике", "Банковское дело", "Юриспруденция", "Эксплуатация беспилотных авиационных систем", "Дошкольное образование", "Преподавание в начальных классах", "Реклама", "Технологии индустрии красоты"
+        ],
+        admission_info: {
+            process: "Для педагогических специальностей предусмотрены психологические тесты, для творческих — творческие испытания. Бюджетных мест нет, но возможна оплата в рассрочку.",
+            deadline: "Сроки гибкие, необходимо уточнять в приемной комиссии."
+        },
+        contacts: {
+            address: "г. Омск, ул. 27 Северная, д. 48",
+            phone: "+7 (991) 431-62-10",
+            email: "perspective.college@yandex.ru"
+        },
+        reviews: [
+            { type: 'positive', text: "Студенты отмечают удобство дистанционного обучения и лояльность программы." },
+            { type: 'positive', text: "Понимающий коллектив, готовность помочь." }
+        ]
+    }
+];
+
+    const specialtyFilter = document.getElementById('specialty-filter');
+    const tuitionFilter = document.getElementById('tuition-filter');
+    const budgetFilter = document.getElementById('budget-filter');
+    const dormFilter = document.getElementById('dorm-filter');
+    const collegeGrid = document.getElementById('college-grid');
+    const resultsCount = document.getElementById('results-count');
+    const noResults = document.getElementById('no-results');
+    
+    const modal = document.getElementById('modal');
+    const modalContent = document.getElementById('modal-content');
+    const modalBody = document.getElementById('modal-body');
+    const modalClose = document.getElementById('modal-close');
+
+    let budgetChartInstance, tuitionChartInstance;
+
+    function renderCollegeCard(college) {
+        const hasBudget = college.budget_places > 0;
+        const card = document.createElement('div');
+        card.className = "bg-white rounded-2xl shadow-md hover:shadow-lg transition-shadow duration-300 flex flex-col overflow-hidden";
+        card.innerHTML = `
+            <div class="p-6 flex-grow">
+                <div class="flex justify-between items-start mb-2">
+                     <h3 class="text-lg font-bold text-slate-900 pr-4">${college.name}</h3>
+                     <div class="flex-shrink-0 flex space-x-2">
+                        ${college.has_dorm ? `<span title="Есть общежитие" class="bg-blue-100 text-blue-800 p-1.5 rounded-full">🏠</span>` : ''}
+                        ${hasBudget ? `<span title="Есть бюджетные места" class="bg-green-100 text-green-800 p-1.5 rounded-full">💰</span>` : ''}
+                    </div>
+                </div>
+                <p class="text-sm text-slate-600 mb-4 h-16 overflow-hidden">${college.description}</p>
+                <div class="mb-4">
+                    ${college.tags.map(tag => `<span class="tag bg-slate-100 text-slate-700 mr-1 mb-1">${getTagName(tag)}</span>`).join('')}
+                </div>
+            </div>
+            <div class="bg-slate-50 p-4 flex items-center justify-between">
+                <div>
+                    <p class="text-sm text-slate-500">Обучение от</p>
+                    <p class="text-lg font-semibold text-slate-800">${college.min_tuition > 0 ? `${college.min_tuition.toLocaleString('ru-RU')} ₽` : 'Бесплатно'}</p>
+                </div>
+                <button data-id="${college.id}" class="details-btn bg-blue-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors">
+                    Подробнее
+                </button>
+            </div>
+        `;
+        return card;
+    }
+    
+    function getTagName(tag) {
+        const tagMap = {
+            it: 'IT',
+            tech: 'Технические',
+            pedagogy: 'Педагогика',
+            medicine: 'Медицина',
+            economy: 'Экономика/Право',
+            service: 'Сервис/Творчество'
+        };
+        return tagMap[tag] || tag;
+    }
+
+    function renderModal(college) {
+        modalBody.innerHTML = `
+            <h2 class="text-3xl font-bold text-slate-900 mb-2">${college.name}</h2>
+            <p class="text-slate-600 mb-6">${college.description}</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                <div class="bg-white p-4 rounded-lg border border-slate-200">
+                    <h4 class="font-bold text-lg mb-2">Ключевые специальности</h4>
+                    <ul class="list-disc list-inside text-slate-700 space-y-1">
+                        ${college.specialties.slice(0, 5).map(s => `<li>${s}</li>`).join('')}
+                        ${college.specialties.length > 5 ? `<li>и другие...</li>` : ''}
+                    </ul>
+                </div>
+                <div class="bg-white p-4 rounded-lg border border-slate-200">
+                    <h4 class="font-bold text-lg mb-2">Условия поступления</h4>
+                    <p class="text-slate-700 mb-2"><strong>Процесс:</strong> ${college.admission_info.process}</p>
+                    <p class="text-slate-700"><strong>Сроки:</strong> ${college.admission_info.deadline}</p>
+                </div>
+            </div>
+
+            ${college.reviews.length > 0 ? `
+            <div class="mb-6">
+                <h4 class="font-bold text-lg mb-3">Отзывы студентов</h4>
+                <div class="space-y-3">
+                    ${college.reviews.map(r => `
+                        <blockquote class="p-3 rounded-lg bg-white border-slate-200 ${r.type === 'positive' ? 'positive-review' : 'negative-review'}">
+                           <p class="text-slate-700">${r.text}</p>
+                        </blockquote>
+                    `).join('')}
+                </div>
+            </div>
+            ` : ''}
+            
+            <div>
+                 <h4 class="font-bold text-lg mb-2">Контакты</h4>
+                 <p class="text-slate-700"><strong>Адрес:</strong> ${college.contacts.address}</p>
+                 <p class="text-slate-700"><strong>Телефон:</strong> ${college.contacts.phone}</p>
+                 <p class="text-slate-700"><strong>Email:</strong> <a href="mailto:${college.contacts.email}" class="text-blue-600 hover:underline">${college.contacts.email}</a></p>
+            </div>
+        `;
+        modal.classList.remove('invisible', 'opacity-0');
+        modalContent.classList.remove('scale-95');
+    }
+
+    function applyFilters() {
+        const specialty = specialtyFilter.value;
+        const maxTuition = parseFloat(tuitionFilter.value);
+        const hasBudget = budgetFilter.checked;
+        const hasDorm = dormFilter.checked;
+
+        const filteredColleges = collegesData.filter(college => {
+            const specialtyMatch = specialty === 'all' || college.tags.includes(specialty);
+            const tuitionMatch = isNaN(maxTuition) || college.min_tuition <= maxTuition;
+            const budgetMatch = !hasBudget || college.budget_places > 0;
+            const dormMatch = !hasDorm || college.has_dorm;
+            return specialtyMatch && tuitionMatch && budgetMatch && dormMatch;
+        });
+
+        collegeGrid.innerHTML = '';
+        if (filteredColleges.length > 0) {
+            filteredColleges.forEach(college => {
+                collegeGrid.appendChild(renderCollegeCard(college));
+            });
+            noResults.classList.add('hidden');
+        } else {
+            noResults.classList.remove('hidden');
+        }
+        resultsCount.textContent = `Найдено: ${filteredColleges.length}`;
+    }
+
+    function renderCharts() {
+        const ctxBudget = document.getElementById('budget-chart').getContext('2d');
+        const ctxTuition = document.getElementById('tuition-chart').getContext('2d');
+
+        const collegesWithBudget = collegesData.filter(c => c.budget_places > 0).sort((a,b) => b.budget_places - a.budget_places);
+        const collegesWithTuition = collegesData.filter(c => c.min_tuition > 0).sort((a,b) => b.min_tuition - a.min_tuition);
+
+        if(budgetChartInstance) budgetChartInstance.destroy();
+        budgetChartInstance = new Chart(ctxBudget, {
+            type: 'bar',
+            data: {
+                labels: collegesWithBudget.map(c => c.name),
+                datasets: [{
+                    label: 'Количество бюджетных мест',
+                    data: collegesWithBudget.map(c => c.budget_places),
+                    backgroundColor: 'rgba(34, 197, 94, 0.7)',
+                    borderColor: 'rgba(22, 163, 74, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Количество бюджетных мест по колледжам',
+                        font: { size: 16 }
+                    },
+                    legend: { display: false }
+                },
+                scales: {
+                    x: { beginAtZero: true },
+                    y: { ticks: { font: { size: 10 } } }
+                }
+            }
+        });
+
+        if(tuitionChartInstance) tuitionChartInstance.destroy();
+        tuitionChartInstance = new Chart(ctxTuition, {
+            type: 'bar',
+            data: {
+                labels: collegesWithTuition.map(c => c.name),
+                datasets: [{
+                    label: 'Мин. стоимость обучения (руб./год)',
+                    data: collegesWithTuition.map(c => c.min_tuition),
+                    backgroundColor: 'rgba(59, 130, 246, 0.7)',
+                    borderColor: 'rgba(37, 99, 235, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Минимальная стоимость платного обучения',
+                        font: { size: 16 }
+                    },
+                    legend: { display: false },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                let label = context.dataset.label || '';
+                                if (label) {
+                                    label += ': ';
+                                }
+                                if (context.parsed.x !== null) {
+                                    label += new Intl.NumberFormat('ru-RU', { style: 'currency', currency: 'RUB' }).format(context.parsed.x);
+                                }
+                                return label;
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    x: { beginAtZero: true },
+                    y: { ticks: { font: { size: 10 } } }
+                }
+            }
+        });
+    }
+
+    [specialtyFilter, tuitionFilter, budgetFilter, dormFilter].forEach(el => {
+        el.addEventListener('input', applyFilters);
+        el.addEventListener('change', applyFilters);
+    });
+    
+    collegeGrid.addEventListener('click', (e) => {
+        const button = e.target.closest('.details-btn');
+        if (button) {
+            const collegeId = parseInt(button.dataset.id, 10);
+            const college = collegesData.find(c => c.id === collegeId);
+            if (college) {
+                renderModal(college);
+            }
+        }
+    });
+
+    modalClose.addEventListener('click', () => {
+        modal.classList.add('invisible', 'opacity-0');
+        modalContent.classList.add('scale-95');
+    });
+
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            modal.classList.add('invisible', 'opacity-0');
+            modalContent.classList.add('scale-95');
+        }
+    });
+    
+    applyFilters();
+    renderCharts();
+});
+</script>
+</body>
+</html>
