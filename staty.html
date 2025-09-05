@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Статьи об автоэлектрике</title>
+    <link rel="icon" href="icon.png" type="image/png">
+    <style>
+        @font-face {
+            font-family: 'digi7';
+            src: url('digi7.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background: url('background.jpg') no-repeat center center fixed;
+            background-size: cover;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            animation: fadeIn 2s ease-out; /* Анимация открытия страницы */
+        }
+        .container {
+            width: 90%;
+            max-width: 800px;
+            margin: 80px 0;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.6);
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+            animation: slideFromBottom 1s ease-out; /* Новая анимация */
+        }
+        .header {
+            font-size: 2.5em;
+            text-align: center;
+            margin-bottom: 30px;
+            color: #4fc3f7;
+            animation: slideFromLeft 1s ease-out; /* Анимация из index.html */
+        }
+        .article {
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            overflow: hidden;
+            animation: fadeIn 1.5s ease-out; /* Анимация появления статей */
+        }
+        .article-header {
+            padding: 15px 20px;
+            font-size: 1.5em;
+            background: rgba(0, 0, 0, 0.3);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.3s;
+        }
+        .article-header:hover {
+            background: rgba(0, 0, 0, 0.5);
+        }
+        .article-header::after {
+            content: "+";
+            font-size: 1.5em;
+            transition: transform 0.3s;
+        }
+        .article-header.active::after {
+            content: "-";
+        }
+        .article-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out;
+            padding: 0 20px;
+            background: rgba(0, 0, 0, 0.2);
+        }
+        .article-content-inner {
+            padding: 20px 0;
+        }
+        h2 {
+            color: #4fc3f7;
+            margin-top: 25px;
+            font-size: 1.4em;
+        }
+        p, li {
+            line-height: 1.6;
+            margin: 10px 0;
+        }
+        ul, ol {
+            padding-left: 20px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 15px 0;
+        }
+        th, td {
+            padding: 10px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        th {
+            background: rgba(79, 195, 247, 0.2);
+        }
+        img {
+            max-width: 100%;
+            height: auto;
+            margin: 15px 0;
+            border-radius: 5px;
+            display: block;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+        }
+        .back-button, .study-button {
+            display: block;
+            margin: 20px auto 0; /* Adjusted margin for spacing */
+            padding: 12px 25px;
+            font-size: 1.2em;
+            background: rgba(79, 195, 247, 0.3);
+            border: none;
+            border-radius: 5px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s;
+            animation: fadeIn 1s ease-out 1s both; /* Анимация с задержкой */
+        }
+        .back-button:hover, .study-button:hover {
+            background: rgba(79, 195, 247, 0.5);
+            transform: translateY(-2px);
+        }
+
+        /* Задержки для анимаций статей */
+        .article:nth-child(1) { animation-delay: 0.3s; }
+        .article:nth-child(2) { animation-delay: 0.5s; }
+        .article:nth-child(3) { animation-delay: 0.7s; }
+        .article:nth-child(4) { animation-delay: 0.9s; }
+        .article:nth-child(5) { animation-delay: 1.1s; }
+        .article:nth-child(6) { animation-delay: 1.3s; }
+
+
+        /* Анимации из index.html */
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        @keyframes slideFromLeft {
+            from { 
+                opacity: 0;
+                transform: translateX(-100px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        @keyframes slideFromRight {
+            from { 
+                opacity: 0;
+                transform: translateX(100px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+        @keyframes slideFromBottom {
+            from { 
+                opacity: 0;
+                transform: translateY(50px);
+            }
+            to { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .date-time {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            text-align: right;
+            font-size: 1.5em;
+            font-family: 'digi7', Arial, sans-serif;
+            animation: fadeIn 2s ease-out;
+        }
+        #current-time {
+            font-size: 2em;
+        }
+        #calendar {
+            font-size: 1em;
+            margin-bottom: 5px;
+        }
+        @media (max-width: 768px) {
+            .container {
+                margin: 70px 0 40px;
+                width: 95%;
+                padding: 15px;
+            }
+            .header {
+                font-size: 2em;
+            }
+            .article-header {
+                font-size: 1.3em;
+                padding: 12px 15px;
+            }
+            .date-time {
+                top: 2px;
+                right: 10px;
+                font-size: 1em;
+            }
+            #current-time {
+                font-size: 1.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="date-time" id="date-time">
+        <div id="calendar"></div>
+        <div id="current-time"></div>
+    </div>
+
+    <div class="container">
+        <div class="header">Полезные статьи  !!!</div>
+        
+        <!-- Новая статья о различиях специальностей -->
+        <div class="article">
+            <div class="article-header">
+                Автоэлектрик, диагност и установщик: три разные специальности
+            </div>
+            <div class="article-content">
+                <div class="article-content-inner">
+                    <h2>Почему нельзя совмещать эти направления?</h2>
+                    <p>В автосервисе часто предлагают услуги "универсального мастера", но профессиональный подход требует узкой специализации. Вот ключевые различия:</p>
+
+                    <h2>1. Автоэлектрик-диагност</h2>
+                    <p><strong>Основные задачи:</strong></p>
+                    <ul>
+                        <li>Поиск и устранение неисправностей электросистем</li>
+                        <li>Работа с диагностическим оборудованием (сканеры, осциллографы)</li>
+                        <li>Анализ кодов ошибок и параметров ЭБУ</li>
+                        <li>Проверка цепей и датчиков</li>
+                    </ul>
+                    <p><strong>Необходимые навыки:</strong></p>
+                    <ul>
+                        <li>Глубокое знание электроники и схемотехники</li>
+                        <li>Опыт работы с профессиональным диагностическим ПО</li>
+                        <li>Понимание принципов работы всех систем автомобиля</li>
+                    </ul>
+
+                    <h2>2. Установщик дополнительного оборудования</h2>
+                    <p><strong>Основные задачи:</strong></p>
+                    <ul>
+                        <li>Монтаж сигнализаций, автозапуска, камер</li>
+                        <li>Установка мультимедийных систем</li>
+                        <li>Подключение дополнительного освещения</li>
+                        <li>Интеграция электронных помощников</li>
+                    </ul>
+                    <p><strong>Необходимые навыки:</strong></p>
+                    <ul>
+                        <li>Знание современных стандартов подключения</li>
+                        <li>Навыки аккуратного монтажа и маскировки проводов</li>
+                        <li>Опыт работы с различными марками автомобилей</li>
+                    </ul>
+
+                    <h2>Сравнительная таблица</h2>
+                    <table>
+                        <tr>
+                            <th>Критерий</th>
+                            <th>Автоэлектрик-диагност</th>
+                            <th>Установщик оборудования</th>
+                        </tr>
+                        <tr>
+                            <td>Основной инструмент</td>
+                            <td>Диагностический сканер, мультиметр</td>
+                            <td>Монтажный набор, тестер</td>
+                        </tr>
+                        <tr>
+                            <td>Тип задач</td>
+                            <td>Поиск и устранение неисправностей</td>
+                            <td>Монтаж новых систем</td>
+                        </tr>
+                        <tr>
+                            <td>Необходимые знания</td>
+                            <td>Принципы работы электронных систем</td>
+                            <td>Схемы подключения оборудования</td>
+                        </tr>
+                        <tr>
+                            <td>Опасность ошибки</td>
+                            <td>Неправильный ремонт → выход из строя ЭБУ</td>
+                            <td>Неправильный монтаж → пожарная опасность</td>
+                        </tr>
+                    </table>
+
+                    <h2>Почему важно различать?</h2>
+                    <ol>
+                        <li><strong>Разный подход к работе:</strong> диагност анализирует, установщик монтирует</li>
+                        <li><strong>Разные инструменты:</strong> профессиональное диагностическое оборудование vs монтажные наборы</li>
+                        <li><strong>Разная ответственность:</strong> ошибка диагноста может вывести из строя электронику, ошибка установщика - создать угрозу возгорания</li>
+                        <li><strong>Разная подготовка:</strong> требуются разные курсы и опыт</li>
+                    </ol>
+
+                    <h2>Когда нужен универсальный специалист?</h2>
+                    <p>Универсальные мастера могут быть полезны только в случаях:</p>
+                    <ul>
+                        <li>Простых работ на старых автомобилях</li>
+                        <li>Экспресс-диагностики перед установкой оборудования</li>
+                        <li>Мелкого ремонта в условиях ограниченного выбора специалистов</li>
+                    </ul>
+                    <p>Для сложных работ на современных автомобилях (особенно премиум-класса) всегда выбирайте узкоспециализированных мастеров.</p>
+
+                    <h2>Как выбрать правильного специалиста?</h2>
+                    <p><strong>Для диагностики ищем:</strong></p>
+                    <ul>
+                        <li>Специализированный автосервис с дорогим оборудованием</li>
+                        <li>Мастера с сертификатами по конкретным маркам</li>
+                        <li>Проверенные отзывы о точности диагностики</li>
+                    </ul>
+                    <p><strong>Для установки оборудования:</strong></p>
+                    <ul>
+                        <li>Официальных установщиков выбранного бренда</li>
+                        <li>Мастерскую с примерами выполненных работ</li>
+                        <li>Специалистов с опытом работы именно с вашей моделью авто</li>
+                    </ul>
+
+                    <h2>Заключение</h2>
+                    <p>Автоэлектрик-диагност и установщик дополнительного оборудования - это разные профессии, требующие различной подготовки, инструмента и подхода к работе. Попытки сэкономить, обращаясь к "универсалам", часто приводят к некорректной диагностике или некачественному монтажу. Для сложных работ на современных автомобилях всегда выбирайте узкопрофильных специалистов с соответствующим опытом и оборудованием.</p>
+                    <button class="study-button" onclick="window.location.href='ucheba.html'">Путь после 9 класса</button>
+                </div>
+            </div>
+        </div>
+        <div class="article">
+            <div class="article-header">
+                Важность своевременной замены свечей зажигания
+            </div>
+            <div class="article-content">
+                <div class="article-content-inner">
+                    <h2>Введение</h2>
+                    <p>Свечи зажигания — это небольшие, но критически важные компоненты бензинового двигателя, отвечающие за воспламенение топливно-воздушной смеси в цилиндрах. Их исправная работа напрямую влияет на:</p>
+                    <ul>
+                        <li>Мощность двигателя</li>
+                        <li>Расход топлива</li>
+                        <li>Экологичность выхлопа</li>
+                        <li>Общую надежность автомобиля</li>
+                    </ul>
+                    
+                    <h2>Как работают свечи зажигания?</h2>
+                    <p>Принцип работы свечи зажигания:</p>
+                    <ol>
+                        <li>На электроды подается высокое напряжение (15-30 кВ)</li>
+                        <li>Между центральным и боковым электродом проскакивает искра</li>
+                        <li>Искра воспламеняет топливно-воздушную смесь</li>
+                        <li>Происходит микровзрыв, толкающий поршень</li>
+                    </ol>
+                    
+                    <h2>Признаки износа свечей</h2>
+                    <p>Когда свечи требуют замены:</p>
+                    <ul>
+                        <li>Двигатель запускается с трудом (особенно в холодную погоду)</li>
+                        <li>Появляются пропуски зажигания (двигатель "троит")</li>
+                        <li>Увеличивается расход топлива (до 15-20%)</li>
+                        <li>Снижается мощность и приемистость двигателя</li>
+                        <li>Появляется вибрация на холостом ходу</li>
+                    </ul>
+                    
+                    
+                    <h2>Рекомендуемые сроки замены</h2>
+                    <table>
+                        <tr>
+                            <th>Тип свечи</th>
+                            <th>Пробег</th>
+                            <th>Срок службы</th>
+                            <th>Средняя цена</th>
+                        </tr>
+                        <tr>
+                            <td>Обычные никелевые</td>
+                            <td>30 000 км</td>
+                            <td>1-2 года</td>
+                            <td>200-400 руб</td>
+                        </tr>
+                        <tr>
+                            <td>Платиновые</td>
+                            <td>60 000 км</td>
+                            <td>3-4 года</td>
+                            <td>500-1000 руб</td>
+                        </tr>
+                        <tr>
+                            <td>Иридиевые</td>
+                            <td>100 000 км</td>
+                            <td>5-6 лет</td>
+                            <td>1000-2500 руб</td>
+                        </tr>
+                    </table>
+                    
+                    <h2>Последствия несвоевременной замены</h2>
+                    <p>Использование изношенных свечей может привести к серьезным проблемам:</p>
+                    <ul>
+                        <li><strong>Повреждение катализатора</strong> - несгоревшее топливо догорает в катализаторе, вызывая его перегрев</li>
+                        <li><strong>Выход из строя катушек зажигания</strong> - изношенные свечи увеличивают нагрузку на катушки</li>
+                        <li><strong>Прогар клапанов</strong> - при неправильном горении смеси</li>
+                        <li><strong>Повышенный расход масла</strong> - из-за неоптимального сгорания</li>
+                    </ul>
+                    
+                    
+                    <h2>Как выбрать правильные свечи?</h2>
+                    <p>Рекомендации по выбору:</p>
+                    <ol>
+                        <li><strong>Используйте только свечи, рекомендованные производителем</strong> - они имеют правильное калильное число</li>
+                        <li><strong>Обращайте внимание на тепловую характеристику</strong> - "холодные" для мощных двигателей, "горячие" для маломощных</li>
+                        <li><strong>Проверяйте размер и резьбу</strong> - они должны точно соответствовать требованиям двигателя</li>
+                        <li><strong>Выбирайте проверенные бренды</strong> - NGK, Denso, Bosch, Champion</li>
+                        <li><strong>Избегайте подделок</strong> - покупайте у официальных дилеров</li>
+                    </ol>
+                    
+                    <h2>Заключение</h2>
+                    <p>Регулярная замена свечей зажигания - простая, но важная процедура технического обслуживания, которая:</p>
+                    <ul>
+                        <li>Сохранет мощность двигателя</li>
+                        <li>Снизит расход топлива</li>
+                        <li>Уменьшит вредные выбросы</li>
+                        <li>Предотвратит серьезные поломки</li>
+                        <li>Продлит срок службы двигателя</li>
+                    </ul>
+                    <p>Не экономьте на качестве свечей и соблюдайте регламент замены, указанный производителем вашего автомобиля.</p>
+                    <button class="study-button" onclick="window.location.href='ucheba.html'">Путь после 9 класса</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Новая статья о защите проводки -->
+        <div class="article">
+            <div class="article-header">
+                Защита электропроводки: локеры и кожухи ДВС
+            </div>
+            <div class="article-content">
+                <div class="article-content-inner">
+                    <h2>Для чего нужна защита электропроводки?</h2>
+                    <p>Электропроводка в автомобиле постоянно подвергается воздействию:</p>
+                    <ul>
+                        <li>Высоких температур от двигателя</li>
+                        <li>Вибрации и механических повреждений</li>
+                        <li>Влаги и реагентов с дороги</li>
+                        <li>Воздействия масел и технических жидкостей</li>
+                    </ul>
+
+                    
+                    <h2>Виды защитных элементов</h2>
+                    <table>
+                        <tr>
+                            <th>Тип защиты</th>
+                            <th>Назначение</th>
+                            <th>Материал</th>
+                        </tr>
+                        <tr>
+                            <td>Локеры (проводные каналы)</td>
+                            <td>Защита групп проводов</td>
+                            <td>Пластик, термостойкая резина</td>
+                        </tr>
+                        <tr>
+                            <td>Защитные кожухи ДВС</td>
+                            <td>Защита всей проводки в моторном отсеке</td>
+                            <td>Термостойкий пластик, металл</td>
+                        </tr>
+                        <tr>
+                            <td>Термостойкие трубки</td>
+                            <td>Защита отдельных проводов</td>
+                            <td>Силикон, стекловолокно</td>
+                        </tr>
+                    </table>
+                    
+                    <h2>Чем грозит отсутствие защиты?</h2>
+                    <ol>
+                        <li><strong>Короткое замыкание</strong> - при повреждении изоляции проводов</li>
+                        <li><strong>Выход из строя датчиков</strong> - из-за перегрева проводки</li>
+                        <li><strong>Пожарная опасность</strong> - при контакте с горячими частями двигателя</li>
+                        <li><strong>Коррозия контактов</strong> - при попадании влаги</li>
+                        <li><strong>Нестабильная работа электроники</strong> - из-за повреждения сигнальных проводов</li>
+                    </ol>
+
+                    
+                    <h2>Как проверить состояние защиты?</h2>
+                    <ul>
+                        <li>Осмотреть целостность всех защитных кожухов</li>
+                        <li>Проверить отсутствие перетертостей на проводах</li>
+                        <li>Убедиться, что провода не касаются горячих деталей</li>
+                        <li>Проверить фиксацию всех хомутов и креплений</li>
+                    </ul>
+                    
+                    <h2>Советы по обслуживанию</h2>
+                    <p>Рекомендации для поддержания защиты проводки:</p>
+                    <ol>
+                        <li>Регулярно очищайте моторный отсек от грязи</li>
+                        <li>При замене проводки всегда используйте новые защитные элементы</li>
+                        <li>Не допускайте провисания проводов</li>
+                        <li>Используйте термостойкие материалы вблизи выпускного коллектора</li>
+                        <li>При тюнинге уделяйте особое внимание защите новой проводки</li>
+                    </ol>
+                    
+                    <h2>Заключение</h2>
+                    <p>Качественная защита электропроводки - это не просто "косметическое" решение, а важная часть системы безопасности автомобиля. Экономия на защитных элементах может привести к дорогостоящему ремонту электрооборудования и даже создать угрозу возгорания. Регулярный осмотр и своевременная замена поврежденных защитных элементов помогут избежать серьезных проблем и продлят срок службы электросистемы вашего автомобиля.</p>
+                    <button class="study-button" onclick="window.location.href='ucheba.html'">Путь после 9 класса</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Статья о соединениях проводки -->
+        <div class="article">
+            <div class="article-header">
+                Пайка и скрутки: правильные соединения электропроводки
+            </div>
+            <div class="article-content">
+                <div class="article-content-inner">
+                    <h2>Основные способы соединения проводов</h2>
+                    <p>В автомобильной электрике применяются три основных метода соединения проводов:</p>
+                    <ol>
+                        <li><strong>Пайка</strong> - наиболее надежный профессиональный метод</li>
+                        <li><strong>Обжимные клеммы</strong> - заводской стандарт для большинства соединений</li>
+                        <li><strong>Скрутки</strong> - временное решение, не рекомендуемое для постоянного использования</li>
+                    </ol>
+
+                    <h2>Технология правильной пайки</h2>
+                    <p><strong>Необходимые материалы:</strong></p>
+                    <ul>
+                        <li>Паяльник 40-60 Вт с регулировкой температуры</li>
+                        <li>Оловянно-свинцовый припой ПОС-60</li>
+                        <li>Канифоль или флюс для пайки меди</li>
+                        <li>Термоусадочные трубки</li>
+                    </ul>
+
+                    <p><strong>Пошаговый процесс:</strong></p>
+                    <ol>
+                        <li>Зачистите провода на 15-20 мм</li>
+                        <li>Скрутите жилы плотной скруткой</li>
+                        <li>Прогрейте соединение и нанесите припой</li>
+                        <li>Дайте остыть естественным образом</li>
+                        <li>Наденьте термоусадку и прогрейте феном</li>
+                    </ol>
+
+                    <h2>Почему скрутки опасны в автомобиле?</h2>
+                    <table>
+                        <tr>
+                            <th>Проблема</th>
+                            <th>Последствие</th>
+                        </tr>
+                        <tr>
+                            <td>Окисление контакта</td>
+                            <td>Увеличение сопротивления и нагрев</td>
+                        </tr>
+                        <tr>
+                            <td>Вибрация</td>
+                            <td>Разрушение соединения со временем</td>
+                        </tr>
+                        <tr>
+                            <td>Влажность</td>
+                            <td>Коррозия и короткое замыкание</td>
+                        </tr>
+                    </table>
+
+                    <h2>Материалы для изоляции</h2>
+                    <p><strong>Лучшие варианты:</strong></p>
+                    <ul>
+                        <li><strong>Термоусадочные трубки</strong> - обеспечивают герметизацию</li>
+                        <li><strong>Самовулканизирующаяся лента</strong> - для сложных форм</li>
+                        <li><strong>Кембрики ПВХ</strong> - бюджетное решение</li>
+                        <li><strong>Жидкая изоляция</strong> - дополнительная защита</li>
+                    </ul>
+
+                    <h2>Типичные ошибки</h2>
+                    <ol>
+                        <li>Использование кислотных флюсов (разъедают медь)</li>
+                        <li>Перегрев провода при пайке (разрушает изоляцию)</li>
+                        <li>Недостаточная длина скрутки (менее 10 мм)</li>
+                        <li>Применение изоленты как основной изоляции</li>
+                    </ol>
+
+                    <h2>Сравнение методов</h2>
+                    <table>
+                        <tr>
+                            <th>Метод</th>
+                            <th>Срок службы</th>
+                            <th>Стоимость</th>
+                            <th>Надежность</th>
+                        </tr>
+                        <tr>
+                            <td>Пайка</td>
+                            <td>10+ лет</td>
+                            <td>Средняя</td>
+                            <td>★★★★★</td>
+                        </tr>
+                        <tr>
+                            <td>Обжимные гильзы</td>
+                            <td>5-7 лет</td>
+                            <td>Низкая</td>
+                            <td>★★★★☆</td>
+                        </tr>
+                        <tr>
+                            <td>Скрутка</td>
+                            <td>1-2 года</td>
+                            <td>Минимальная</td>
+                            <td>★★☆☆☆</td>
+                        </tr>
+                    </table>
+
+                    <h2>Советы профессионалов</h2>
+                    <ul>
+                        <li>Всегда используйте термоусадку с клеевым слоем для влагозащиты</li>
+                        <li>При обжиме применяйте специальный инструмент, а не пассатижи</li>
+                        <li>Для сигнальных проводов используйте только пайку</li>
+                        <li>Размещайте соединения в доступных местах для возможного ремонта</li>
+                    </ul>
+
+                    <h2>Заключение</h2>
+                    <p>Качественное соединение проводов - основа надежной работы автомобильной электрики. Пайка с термоусадкой остается "золотым стандартом", в то время как скрутки допустимы только как временное решение. Помните, что экономия на материалах и времени при ремонте проводки может привести к серьезным поломкам и даже возгоранию.</p>
+                    <button class="study-button" onclick="window.location.href='ucheba.html'">Путь после 9 класса</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Новая статья: Информация подготовлена с помощью ИИ -->
+        <div class="article">
+            <div class="article-header">
+                Информация  для поступления учеников 9х - 11х классов.
+            </div>
+            <div class="article-content">
+                <div class="article-content-inner">
+                    <p>Уважаемые читатели! Большая часть материалов на этой странице была подготовлена с использованием передовых моделей искусственного интеллекта. Мы стремимся предоставлять актуальную и полезную информацию в области автоэлектрики и не только, используя современные технологии для ее генерации и структурирования.</p>
+                    <p>Искусственный интеллект помогает нам быстро анализировать большие объемы данных, выявлять ключевые аспекты и представлять их в доступной форме. Однако, всегда рекомендуется перепроверять информацию и обращаться к опытным специалистам для выполнения любых работ с электрооборудованием вашего автомобиля.</p>
+                    <p>Надеемся, что эти статьи будут для вас полезными и помогут разобраться в сложных вопросах автоэлектрики.</p>
+                    <button class="study-button" onclick="window.location.href='ucheba.html'">Путь после 9 класса</button>
+                </div>
+            </div>
+        </div>
+        <button class="back-button" onclick="window.location.href='index.html'">На главную</button>
+    </div>
+
+    <script>
+        // Обновление даты и времени
+        function updateDateTime() {
+            const now = new Date();
+            const calendar = document.getElementById('calendar');
+            const currentTime = document.getElementById('current-time');
+
+            const options = { year: 'numeric', month: 'long', day: 'numeric' };
+            calendar.textContent = now.toLocaleDateString('ru-RU', options);
+
+            const timeString = now.toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+            currentTime.textContent = timeString;
+        }
+        setInterval(updateDateTime, 1000);
+        updateDateTime();
+
+        // Разворачивание/сворачивание статей
+        document.querySelectorAll('.article-header').forEach(header => {
+            header.addEventListener('click', () => {
+                const article = header.parentElement;
+                const content = header.nextElementSibling;
+                
+                header.classList.toggle('active');
+                if (header.classList.contains('active')) {
+                    content.style.maxHeight = content.scrollHeight + "px";
+                } else {
+                    content.style.maxHeight = "0";
+                }
+            });
+        });
+
+        // Инициализация анимаций при загрузке
+        document.addEventListener('DOMContentLoaded', function() {
+            // Анимация появления часов
+            const dateTime = document.querySelector('.date-time');
+            dateTime.style.animation = 'fadeIn 2s ease-out';
+            
+            // Анимация появления контейнера
+            const container = document.querySelector('.container');
+            container.style.animation = 'slideFromBottom 1s ease-out';
+        });
+        
+    </script>
+</body>
+</html>
